@@ -33,6 +33,12 @@ class MangaScraper {
         return text;
     }
 
+    async selectElements(selector) {
+        const elements = await this.driver.findElements(By.css(selector));
+        await this.driver.sleep(2000);
+        return elements;
+    }
+
     async quit() {
         this.driver.quit();
     }
@@ -49,8 +55,28 @@ class MangaScraper {
         return data;
     }
 
+    async getHref(element) {
+        const href = await element.getAttribute('href');
+        return href;
+    }
+
+    async getClass(element) {
+        const div = await element.getAttribute('class');
+        const new_class = div.split(" ").map(val => `.${val}`).join("")
+
+        await this.driver.sleep(2000);
+
+        return new_class;
+    }
+
     async prevPage() {
         await this.driver.navigate().back();
+        await this.driver.sleep(2000);
+    }
+
+    async closePopup(window) {
+        const cur_window = await this.driver.getWindowHandle();
+        return (cur_window == window);
     }
 
     // async switchWindow() {}
