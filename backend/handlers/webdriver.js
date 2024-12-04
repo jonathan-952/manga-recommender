@@ -60,14 +60,19 @@ class MangaScraper {
         return href;
     }
 
-    async getClass(element) {
-        const div = await element.getAttribute('class');
-        const new_class = div.split(" ").map(val => `.${val}`).join("")
-
-        await this.driver.sleep(2000);
-
-        return new_class;
+    async navigate(link) {
+        await this.driver.navigate().to(`${link}`);
+        await this.driver.sleep(3000);
     }
+
+    // async getClass(element, i) {
+    //     const div = await element.getAttribute('class');
+    //     let new_class = div.split(" ").map(val => `.${val}`).join("");
+    //     new_class += `:nth-child(${i + 1})`;
+    //     await this.driver.sleep(2000);
+
+    //     return new_class;
+    // }
 
     async prevPage() {
         await this.driver.navigate().back();
