@@ -5,13 +5,12 @@ async function scraper() {
     await bot.initialize();
 
     await bot.clickElement('a[href = "https://myanimelist.net/manga.php?letter=."]', 10000); // click a-z sort
-
-    // instead of back arrowing every time, you can open a new window and close it to avoid stale element error
-    const elements = await bot.selectElements('a.hoverinfo_trigger.fw-b');
-    for (let i = 0; i < 5; i++) {
+    let window_url;
+    for (let i = 0; i < ; i++) {
         try {
+        const elements = await bot.selectElements('a.hoverinfo_trigger.fw-b');
         const href = await bot.getHref(elements[i]);
-  
+        window_url = href;
         await bot.navigate(href)
         // await bot.scrollAndClick(element, 2000) // click on manga title
    
@@ -22,9 +21,11 @@ async function scraper() {
         console.log(description);
 
         await bot.prevPage();
-
         } catch (err) {
             console.log(err);
+            if (bot.driver.getWindowHandle() != window_url) {
+                await bot.prevPage();
+            }
         }
     }
        

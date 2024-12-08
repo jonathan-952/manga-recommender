@@ -29,6 +29,7 @@ class MangaScraper {
     async getText(selector, time) {
         const element = await this.driver.findElement(By.css(selector));
         const text = await element.getText();
+        console.log("Text: ", text);
         await this.driver.sleep(time);
         return text;
     }
@@ -62,7 +63,7 @@ class MangaScraper {
 
     async navigate(link) {
         await this.driver.navigate().to(`${link}`);
-        await this.driver.sleep(3000);
+        await this.driver.sleep(4000);
     }
 
     // async getClass(element, i) {
