@@ -1,3 +1,5 @@
+// source venv/bin/activate  >>activate virtual env for scrapy<<
+
 const MangaScraper = require('./handlers/webdriver.js');
 
 async function scraper() {
