@@ -1,7 +1,15 @@
 const express = require('express');
 const app = express();
-const port = 3000;
-const Anime = require('./db.js')
+const port = 5777;
+const mongoose = require('mongoose')
+
+//connect to mongodb
+const dbURI = 'mongodb+srv://misfries603:nrPDhO63AAMW4Bl2@anime.nclmn.mongodb.net/?retryWrites=true&w=majority&appName=anime';
+
+mongoose.connect(dbURI)
+    .then(() => app.listen(port), console.log('running'))
+    .catch((err) => console.log("err: ", err.message))
+   
 
 app.get('/', (req, res) => {
     res.send('server working');
@@ -10,6 +18,3 @@ app.get('/', (req, res) => {
 app.get('/add-title', (req, res) => {
 
 })
-app.listen(port, () => {
-    console.log('listening on port 3000');
-});

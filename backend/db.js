@@ -1,11 +1,5 @@
 const mongoose = require('mongoose')
-//connect to mongodb
-const dbURI = 'mongodb+srv://jonathans9522:GSD0jDdiTdGe8rdN@db.7eyod.mongodb.net/?retryWrites=true&w=majority&appName=db';
 
-mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
-    .then(() => console.log('worked'))
-    .catch((err) => console.log(err.message))
-    
 const Schema = mongoose.Schema;
 
 const animeSchema = new Schema({
@@ -33,4 +27,17 @@ const animeSchema = new Schema({
 
 const Anime = mongoose.model('Anime', animeSchema);
 
-module.exports = Anime;
+const AddToDB = async (name, desc, genre, image) => {
+    const entry = new Anime({
+        title: name,
+        synposis: desc,
+        genres: genre,
+        img: image,
+    });
+
+    entry.save()
+    .then(() => console.log('saved sucessfully.'))
+    .catch((err) => console.log(err.message))
+};
+
+module.exports = Anime, AddToDB;
