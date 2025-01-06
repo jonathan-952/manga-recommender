@@ -1,38 +1,44 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
 const animeSchema = new Schema({
-    id: {
-        type: String,
+    anime_id: {
+        type: Number,
         required: true
     },
     title: {
         type: String,
         required: true
     },
-    synposis: {
-        type: String,
-        required: false
-    },
-    genres: {
+    synopsis: {
         type: String,
         required: true
     },
+    genres: {
+        type: Array,
+        required: true
+    },
     img: {
-        type: String,
+        type: Array,
+        required: true
+    },
+    episodes: {
+        type: Number,
         required: false
     },
 });
 
-const Anime = mongoose.model('Anime', animeSchema);
+const Anime = mongoose.model('MAL_API', animeSchema);
 
-const AddToDB = async (name, desc, genre, image) => {
+const AddToDB = async (anime_id, name, desc, genre, image, ep) => {
     const entry = new Anime({
+        anime_id: anime_id,
         title: name,
-        synposis: desc,
+        synopsis: desc,
         genres: genre,
         img: image,
+        episodes: ep
     });
 
     entry.save()
@@ -40,4 +46,4 @@ const AddToDB = async (name, desc, genre, image) => {
     .catch((err) => console.log(err.message))
 };
 
-module.exports = Anime, AddToDB;
+module.exports = {AddToDB};
