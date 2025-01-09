@@ -1,13 +1,13 @@
-const axios = require('axios');
+import axios from 'axios';
 const authToken = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImJkYWQ1NDUwNzM2NGQ3Y2FlZWYwMjViNjVmMzM4NmFlM2JjNTNjMmM2ZGRkMGE2MmQ0YTAzMWNkYTk4MWNlYjg4ODQ0OWJlNWNkNmYzOGIyIn0.eyJhdWQiOiJkMWQ2ZGIxM2FmMDJiYWI3MGZhY2I2YmIwNTM0YjRmMiIsImp0aSI6ImJkYWQ1NDUwNzM2NGQ3Y2FlZWYwMjViNjVmMzM4NmFlM2JjNTNjMmM2ZGRkMGE2MmQ0YTAzMWNkYTk4MWNlYjg4ODQ0OWJlNWNkNmYzOGIyIiwiaWF0IjoxNzM1NDU5Mzk2LCJuYmYiOjE3MzU0NTkzOTYsImV4cCI6MTczODEzNzc5Niwic3ViIjoiOTY3NzA2MSIsInNjb3BlcyI6W119.ZhAyMQFBCu5z9nTbkUEuJrutWyzyQh_B_lUzIT1QeNlG23Ecxn7eSCrUZcIVAeBTdwH-8wzryYYqs_V7_f-XReiXIGcmrFhJMvI-EHkXDH9EkSWXN7uOLfTbjnd-nQItkgAgwI4aPizskrWPxfcZ1OH2hv0dfWKsPKpbv9Pd1iXWUX22LifYegqU0LIR8uYFxurMjKTfU0ExP99oquo1z7hUkZPZqKVVd74Zc5ddqXa0dK7xMcjpjvh5gpuXgT4moW-SmRtgVODSp3PXoRtC09LyqIsfJ6QARI1hUnR91DyoFjagqAcKCflpyc5EeIwXuWbMJQ2qM4Ef8QWmf7YAgQ'
-const {AddToDB} = require('../db.js');
 
-async function get_ranking(ranking_type, limit) {
+async function get_ranking(ranking_type, limit, offset) {
     try {
         const res = await axios.get('https://api.myanimelist.net/v2/anime/ranking', {
             params: {
                 "ranking_type": `${ranking_type}`,
                 "limit": `${limit}`,
+                "offset": `${offset}`,
                 "fields": 'id, title, main_picture, synopsis, genres, num_episodes',
             },
             headers: {
@@ -20,20 +20,32 @@ async function get_ranking(ranking_type, limit) {
     }
 }
 
-let ranking = 21314;
-while (ranking < 21315) {
-    try {
-        const res = await get_ranking("all", 500)
-        for (const element of res) {
-            AddToDB(
-                element.node.id, element.node.title, element.node.synopsis, 
-                element.node.genres, element.node.main_picture, element.node.num_episodes)
+export async function start_task() {
+    let offset = 0;
+    while (offset < 21315) {
+        try {
+            let documents = [];
+            const res = await get_ranking("all", 500, offset);
+            for (const element of res) {
+                documents.push({"anime_id": element.node.id, "title": element.node.title, "synopsis": element.node.synopsis, 
+                    "genres": element.node.genres?.map(genre => genre.name) || ['UNKOWN'], 
+                    "img": element.node.main_picture?.medium || element.node.main_picture?.large, "episodes": element.node.num_episodes})
+            }
+            const BATCH_SIZE = 50;
+            for (let i = 0; i < documents.length; i += BATCH_SIZE) {
+                const batch = documents.slice(i, i + BATCH_SIZE);
+                console.log(`Inserting batch ${i/BATCH_SIZE + 1}`);
+                await axios.post('http://localhost:5777/add-to-db', batch);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Add a small delay between batches 
+            }
+        } catch (err) {
+            console.log(err.message)
         }
-    } catch (err) {
-        console.log(err.message)
+        offset += 500;
     }
-    ranking++
 }
+start_task();
 
 
 // function generateCodeVerifier(length) {
