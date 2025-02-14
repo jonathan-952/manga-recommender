@@ -1,6 +1,8 @@
 import similarity from 'compute-cosine-similarity';
 import axios from 'axios';
+import {Heap} from 'heap-js';
 
+// adds every unique genre to a set
 async function getUnigueGenres() {
     try {
         const res = await getGenres();
@@ -16,6 +18,7 @@ async function getUnigueGenres() {
     }
 }
 
+// gets genres from db
 async function getGenres() {
     try {
         const res = await axios.get('http://localhost:5777/read-db');
@@ -26,8 +29,8 @@ async function getGenres() {
     }    
 }
 
-
-async function cos_similarity() {
+// calculated a vector for each title to every unique genre in the db
+async function vector() {
     try {
         const uniques = [...(await getUnigueGenres())];
         const anime = await getGenres();
@@ -41,12 +44,33 @@ async function cos_similarity() {
             }
             entry.push({"anime_id": element.anime_id, "vector": vector_space})
         }
-        console.log(entry)
+
+        let counter = 0;
+        while (counter < entry.length) {
+            axios.post('http://localhost:5777/add-to-db', entry.slice(counter, counter + 50))
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            counter += 50;
+        }
     } catch (err) {
         console.log(err.message)
-    }
-    
+    }  
 }
 
-cos_similarity();
+async function findTitle(vectors, cur, swipe) {
+    const heapInstance = new Heap(swipe ? Heap.maxComparator : null)
+    let heap = [];
+    let keys = {};
+ 
+    vectors.forEach((element) => {
+        if (element.anime_id !== cur.anime_id) {
+            const cos_similarity = similarity(cur.vector, element.vector)
+            keys.element.anime_id = cos_similarity;
+            heap.push(cos_similarity);
+        }
+    });
+  
+    heapInstance.init(heap);
+    return {heap: heap, keys: keys};
+}
 
+export {findTitle};

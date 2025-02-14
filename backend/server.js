@@ -1,15 +1,16 @@
 import express from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 const port = 5777;
-import AddToDB from './db.js';
+import cors from 'cors';
+import {DB, animeSchema, vectorSchema} from './db.js';
 import mongoose from 'mongoose';
+import { findTitle } from './handlers/similarity.js';
 app.use(express.json())
+app.use(cors());
 
-//connect to mongodb
-const dbURI = 'mongodb+srv://misfries603:nrPDhO63AAMW4Bl2@anime.nclmn.mongodb.net/anime_data?retryWrites=true&w=majority&appName=anime';
-
-mongoose.connect(dbURI, {
-    useUnifiedTopology: true,
+mongoose.connect(process.env.DBURI, {
 })
     .then(() => {
         console.log('db connected successfully');
@@ -19,14 +20,35 @@ mongoose.connect(dbURI, {
     .then(() => console.log('server running'))
     .catch((err) => console.log("err: ", err.message))
 
-app.get('/', (req, res) => {
-    res.send('server working');
-});
-
 app.post('/add-to-db', async (req, res) => {
-    const documents = req.body;
-    await AddToDB(documents);
+    const {documents, modelName, model} = req.body;
+    const instance = new DB(modelName, model);
+    await instance.add(documents);
     res.send('successful');
 })
 
-//fix this module bs tomorrow
+app.get('/read-images', async (req, res) => {
+    const {columns} = req.query;
+    const instance = new DB('final_mal_dbs', animeSchema);
+    try {
+        const docs = await instance.find(columns);
+        res.send(docs);
+    } catch (err) {
+        console.log(err.message);
+    }
+});
+
+// get vectors, calc similarity and push dataset back to client
+app.get('/calc-vectors', async (req, res) => {
+    const {columns, cur, swipe} = req.query;
+    try {
+        const instance = new DB('anime_vectors', vectorSchema);
+        const cur_vector = (await instance.find('anime_id', cur.anime_id, columns))[0];
+        const docs = await instance.find(columns);
+        const similar = await findTitle(docs, cur_vector, swipe);
+        res.send(similar);
+
+    } catch (err) {
+        console.log(err.message);
+    }
+});

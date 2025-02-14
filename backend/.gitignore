@@ -2,3 +2,4 @@ node_modules/
 mangalist.csv
 scraper/proxies_list.txt
 datasets/
+.env

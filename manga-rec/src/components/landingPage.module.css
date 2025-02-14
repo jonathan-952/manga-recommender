@@ -11,11 +11,15 @@
 }
 
 .header button {
-    border: solid gray 4px;
-    border-radius: 10px;
+    border-radius: 20px;
+    border: none;
     width: 9vw;
     height:7vh; 
-    background-color: lightgray;
+    background-color:rgb(137, 148, 153);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0px 0px 5px black;
 }
 
 #page {
@@ -37,12 +41,15 @@
     
 }
 
-.card {
-    position: relative;
-    background-color: black;
-    height: 50vh;
+.anime_pic {
     width: 20vw;
-    border-radius: 10px;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0px 0px 10px 1px black;
+
+}
+
+.card {
 }
 
 .btn_container {
@@ -53,6 +60,13 @@
 .btn_container > button {
     width: 10vw;
     height: 8vh;
+    border-radius: 20px;
+    border: none;
+    background-color:rgb(137, 148, 153);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0px 0px 5px black;
 }
 
 .card_container {
